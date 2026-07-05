@@ -1,0 +1,5 @@
+# backup creati da install.sh
+*.backup.*
+
+# roba di sistema
+.DS_Store
