@@ -5,7 +5,7 @@ Le mie configurazioni personali (zsh, ecc.), versionate e ripristinabili con un 
 ## Installazione su una macchina nuova
 
 ```bash
-git clone git@github.com:TUO-UTENTE/dotfiles.git ~/source/dotfiles
+git clone git@github.com:exSnake/dotfiles.git ~/source/dotfiles
 cd ~/source/dotfiles
 ./install.sh
 ```
