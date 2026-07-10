@@ -136,9 +136,9 @@ bindkey '^R' zaw-history
 bindkey '^S' zaw-git-status
 bindkey '^T' zaw-git-files
 bindkey '^B' zaw-git-branches
-bindkey '^U' zaw-git-log
-bindkey '^W' zaw-git-recent-branches
-bindkey '^X' zaw-git-reflog
+bindkey '^[l' zaw-git-log             # ALT+L (Log) — was ^U, which clobbered kill-whole-line
+bindkey '^[B' zaw-git-recent-branches # SHIFT+ALT+B — was ^W, which iTerm sends for ALT+DEL (delete word)
+bindkey '^[r' zaw-git-reflog          # ALT+R (Reflog) — was ^X, which clobbered the ^X chord prefix
 
 # ----------------------------------------------------------------------------
 #  Aliases — listing (eza)
