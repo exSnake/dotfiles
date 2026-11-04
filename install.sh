@@ -75,7 +75,7 @@ link zshrc     "$HOME/.zshrc"
 # ==============================================================================
 if [ "$OS" = "macos" ]; then
   if exists brew; then
-    for f in eza gh nvm shellcheck; do
+    for f in eza fzf gh nvm shellcheck tmux; do
       if brew list --formula "$f" >/dev/null 2>&1; then
         ok "$f già installato"
       else
@@ -109,7 +109,7 @@ elif [ "$OS" = "linux" ]; then
     fi
   }
 
-  for c in zsh git curl eza gh shellcheck; do
+  for c in zsh git curl eza fzf gh shellcheck tmux; do
     if exists "$c"; then
       ok "$c già installato"
     else
@@ -144,7 +144,15 @@ fi
 #  4. Plugin OMZ custom (clona se mancano, aggiorna se presenti)
 # ==============================================================================
 ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
-for p in zaw zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search; do
+for entry in \
+  "zaw https://github.com/zsh-users/zaw" \
+  "zsh-autosuggestions https://github.com/zsh-users/zsh-autosuggestions" \
+  "zsh-syntax-highlighting https://github.com/zsh-users/zsh-syntax-highlighting" \
+  "zsh-history-substring-search https://github.com/zsh-users/zsh-history-substring-search" \
+  "fzf-tab https://github.com/Aloxaf/fzf-tab" \
+  "you-should-use https://github.com/MichaelAquilina/zsh-you-should-use"; do
+  p="${entry%% *}"
+  url="${entry#* }"
   dir="$ZSH_CUSTOM/plugins/$p"
   if [ -d "$dir/.git" ]; then
     if git -C "$dir" pull --ff-only --quiet; then
@@ -154,7 +162,7 @@ for p in zaw zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-s
     fi
   else
     info "clono il plugin $p..."
-    git clone --quiet --depth 1 "https://github.com/zsh-users/$p" "$dir"
+    git clone --quiet --depth 1 "$url" "$dir"
   fi
 done
 
