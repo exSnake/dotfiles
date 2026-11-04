@@ -58,6 +58,7 @@ link() {
     info "backup del vecchio $dest"
   fi
 
+  mkdir -p "$(dirname "$dest")"
   ln -sfn "$src" "$dest"
   ok "$dest  ->  $src"
 }
@@ -66,16 +67,29 @@ link() {
 #  Mappa dei symlink — aggiungi qui i nuovi dotfiles
 #  NB: i file in shell/ NON vanno linkati — li carica `zshrc` via source
 # ----------------------------------------------------------------------------
-link zshrc     "$HOME/.zshrc"
-# link gitconfig "$HOME/.gitconfig"
+link zshrc             "$HOME/.zshrc"
+link tmux/tmux.conf    "$HOME/.tmux.conf"
+link mise/global.toml  "$HOME/.config/mise/config.toml"
+link atuin/config.toml "$HOME/.atuin/config.toml"
 # link vimrc     "$HOME/.vimrc"
+
+# ~/.gitconfig resta personale (email, alias, maintenance.repo): la repo è
+# pubblica. Ci aggiungiamo solo l'include con la configurazione di delta.
+GIT_INCLUDE="$DOTFILES/git/delta.gitconfig"
+if git config --global --get-all include.path | grep -qxF "$GIT_INCLUDE"; then
+  ok "$HOME/.gitconfig include già git/delta.gitconfig"
+else
+  git config --global --add include.path "$GIT_INCLUDE"
+  ok "$HOME/.gitconfig ora include git/delta.gitconfig"
+fi
 
 # ==============================================================================
 #  2. Pacchetti (solo quelli mancanti)
 # ==============================================================================
 if [ "$OS" = "macos" ]; then
   if exists brew; then
-    for f in eza fzf gh nvm shellcheck tmux; do
+    for f in eza fzf gh mise shellcheck tmux \
+             atuin bat btop dust fd git-delta ncdu tlrc watchexec zoxide; do
       if brew list --formula "$f" >/dev/null 2>&1; then
         ok "$f già installato"
       else
@@ -83,6 +97,15 @@ if [ "$OS" = "macos" ]; then
         brew install "$f"
       fi
     done
+    if [ -d /Applications/Raycast.app ]; then
+      ok "Raycast già installato"
+    else
+      info "installo Raycast..."
+      brew install --cask raycast
+    fi
+    if exists mise; then
+      mise install --yes
+    fi
     if brew list --cask font-meslo-lg-nerd-font >/dev/null 2>&1; then
       ok "font Nerd già installato"
     else
@@ -109,7 +132,7 @@ elif [ "$OS" = "linux" ]; then
     fi
   }
 
-  for c in zsh git curl eza fzf gh shellcheck tmux; do
+  for c in zsh git curl eza fzf gh shellcheck tmux btop ncdu zoxide; do
     if exists "$c"; then
       ok "$c già installato"
     else

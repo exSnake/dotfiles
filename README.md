@@ -13,11 +13,15 @@ cd ~/source/dotfiles
 `install.sh` fa il setup **completo** ed è **idempotente**: puoi rilanciarlo
 quando vuoi (es. dopo ogni `git pull`) e fa solo ciò che manca:
 
-1. **symlink** in `$HOME` (es. `~/.zshrc` → `~/source/dotfiles/zshrc`) — se un
-   file esiste già come file reale, backup con timestamp prima di sostituirlo;
-   se il link è già giusto, non tocca nulla;
-2. **pacchetti** mancanti (eza, gh, nvm + Nerd Font su macOS; via apt/pacman
-   su Linux, nvm con lo script ufficiale);
+1. **symlink** in `$HOME` (`~/.zshrc`, `~/.tmux.conf`,
+   `~/.config/mise/config.toml`, `~/.atuin/config.toml`): se un file esiste già
+   come file reale, backup con timestamp prima di sostituirlo; se il link è già
+   giusto, non tocca nulla. In `~/.gitconfig` aggiunge solo
+   `include.path = git/delta.gitconfig`;
+2. **pacchetti** mancanti (su macOS con brew: eza, fzf, gh, mise, shellcheck,
+   tmux, atuin, bat, btop, dust, fd, git-delta, ncdu, tlrc, watchexec, zoxide,
+   Raycast, Nerd Font, poi `mise install`; su Linux via apt/pacman la parte
+   disponibile, nvm con lo script ufficiale);
 3. **Oh My Zsh**, se assente (senza toccare il symlink `~/.zshrc`);
 4. **plugin OMZ custom** (zaw, autosuggestions, syntax-highlighting,
    history-substring-search, fzf-tab, you-should-use): clonati se mancano,
@@ -44,7 +48,7 @@ dotfiles/
 ├── shell/
 │   ├── common.zsh       # condiviso: history, plugin OMZ, keybinding, helper
 │   │                    #   (exists, warn_missing), alias eza/gh, coreutils
-│   ├── macos.zsh        # Homebrew /opt/homebrew, nvm, iTerm2, plugin macos
+│   ├── macos.zsh        # Homebrew /opt/homebrew, iTerm2, plugin macos
 │   ├── linux.zsh        # apt/pacman, nvm ~/.nvm, pnpm, plugin ssh-agent
 │   └── wsl.zsh          # overlay sopra linux.zsh: pbcopy/pbpaste → clip.exe
 ├── install.sh
@@ -77,13 +81,38 @@ anche su WSL) e keybinding sono identici ovunque:
 | Tasto        | Azione                       |
 |--------------|------------------------------|
 | `↑` / `↓`    | history-substring-search     |
-| `^R`         | zaw-history                  |
+| `^R`         | atuin (zaw-history se atuin manca) |
+| `Tab`        | fzf-tab (`**` + Tab: completamento fzf) |
 | `^S`         | zaw-git-status               |
 | `^T`         | zaw-git-files                |
 | `^B`         | zaw-git-branches             |
-| `^U`         | zaw-git-log                  |
-| `^W`         | zaw-git-recent-branches      |
-| `^X`         | zaw-git-reflog               |
+| `Alt+L`      | zaw-git-log                  |
+| `Shift+Alt+B`| zaw-git-recent-branches      |
+| `Alt+R`      | zaw-git-reflog               |
+
+### Comandi standard serviti da strumenti migliori
+
+Nelle shell interattive alcuni comandi di tutti i giorni passano da uno
+strumento più comodo, con lo stesso nome:
+
+| Scrivi | Gira | Note |
+|---|---|---|
+| `ls`, `ll`, `la`, `lt` | eza | icone, stato git, albero |
+| `cat` | bat | evidenziazione della sintassi; in una pipe esce testo semplice |
+| `man` | bat come pager | man page colorate |
+| `cd` | zoxide | `cd homelab` salta alla cartella più usata che corrisponde; `cdi` la sceglie con fzf |
+| `top` | btop | |
+| `git diff`, `log -p`, `show` | delta | via `git/delta.gitconfig` |
+| `^R` | atuin | cronologia in SQLite, ricerca fuzzy, filtri per cartella e host |
+
+Con nomi propri, perché le opzioni sono diverse da quelle del comando
+standard: `fd` (cerca file, usato anche da fzf), `dust` (cosa occupa spazio),
+`ncdu` (lo stesso, interattivo, con cancellazione), `tldr` (esempi d'uso),
+`watchexec` (rilancia un comando quando cambia un file).
+
+Nelle shell di Claude Code (`CLAUDECODE=1`) questi alias non vengono definiti:
+un agente scrive i comandi con le opzioni standard, e `ls -t` su eza vuol dire
+un'altra cosa. La funzione `is_human_shell` in `common.zsh` fa il controllo.
 
 ### Dipendenze mancanti → hint automatico
 
@@ -124,9 +153,13 @@ Ogni file OS dichiara come si installano i pacchetti (`DOTFILES_INSTALL_HINT`:
 |--------------------|------------|---------------------------------------------|
 | `zshrc`            | `~/.zshrc` | Entrypoint: OS detection + source di shell/ |
 | `shell/common.zsh` | —          | Config zsh condivisa + Oh My Zsh            |
-| `shell/macos.zsh`  | —          | Solo macOS (Homebrew, nvm, iTerm2)          |
+| `shell/macos.zsh`  | —          | Solo macOS (Homebrew, iTerm2)               |
 | `shell/linux.zsh`  | —          | Solo Linux (apt/pacman, nvm, pnpm, alias)   |
 | `shell/wsl.zsh`    | —          | Overlay WSL (clipboard → Windows)           |
+| `tmux/tmux.conf`   | `~/.tmux.conf` | mouse, cronologia lunga, finestre da 1, split nella cartella corrente |
+| `mise/global.toml` | `~/.config/mise/config.toml` | versioni globali (Node 22) e lettura dei `.nvmrc` |
+| `atuin/config.toml`| `~/.atuin/config.toml` | ricerca fuzzy, lista compatta, Invio che non esegue subito |
+| `git/delta.gitconfig` | incluso da `~/.gitconfig` | delta come pager di git |
 | `macos/launchd/`   | —          | Job launchd di manutenzione (vedi sotto)    |
 | `Brewfile`         | —          | Pacchetti Homebrew, scritto da `brew-upgrade`, solo locale |
 
@@ -171,14 +204,16 @@ installazione giusto per l'OS in cui sei. Per riferimento, a mano:
 macOS:
 
 ```bash
-brew install eza gh nvm shellcheck
-brew install --cask font-meslo-lg-nerd-font   # icone per eza + tema agnoster
+brew install eza fzf gh mise shellcheck tmux \
+  atuin bat btop dust fd git-delta ncdu tlrc watchexec zoxide
+brew install --cask raycast font-meslo-lg-nerd-font   # font: icone per eza + tema agnoster
+mise install
 ```
 
 Linux / WSL (Debian/Ubuntu):
 
 ```bash
-sudo apt install eza gh shellcheck
+sudo apt install eza fzf gh shellcheck tmux btop ncdu zoxide
 # nvm: https://github.com/nvm-sh/nvm#installing-and-updating
 ```
 
