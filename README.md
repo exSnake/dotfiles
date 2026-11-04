@@ -126,6 +126,40 @@ Ogni file OS dichiara come si installano i pacchetti (`DOTFILES_INSTALL_HINT`:
 | `shell/macos.zsh`  | —          | Solo macOS (Homebrew, nvm, iTerm2)          |
 | `shell/linux.zsh`  | —          | Solo Linux (apt/pacman, nvm, pnpm, alias)   |
 | `shell/wsl.zsh`    | —          | Overlay WSL (clipboard → Windows)           |
+| `macos/launchd/`   | —          | Job launchd di manutenzione (vedi sotto)    |
+| `Brewfile`         | —          | Pacchetti Homebrew, scritto da `brew-upgrade`, solo locale |
+
+## Job di manutenzione (macOS)
+
+`install.sh` carica anche alcuni LaunchAgent in `~/Library/LaunchAgents/`,
+generati dai template in `macos/launchd/plists/`. Ogni job passa da
+`macos/launchd/run-job.sh`, che imposta il PATH, scrive il log in
+`~/Library/Logs/dotfiles/<job>.log` e manda una notifica se il job fallisce.
+
+| Job | Quando | Cosa fa |
+|---|---|---|
+| `brew-upgrade` | lunedì 10:00 | `brew update`, `upgrade --formula`, `cleanup --prune=30`, riscrive `Brewfile` (in `.gitignore`) |
+| `docker-prune` | lunedì 10:30 | immagini inutilizzate da 30 giorni e build cache oltre 10 GB (i volumi restano) |
+| `cache-prune` | il 1° del mese, 11:00 | `npm cache clean`, `uv cache prune` |
+| `claude-backup` | ogni giorno, 13:00 | `rsync` di `~/.claude` sul NAS, senza cancellare nulla dall'altra parte |
+
+Se all'ora prevista il Mac dorme, il job parte al risveglio.
+`claude-backup` con il NAS irraggiungibile salta il giro e fallisce solo se
+l'ultimo backup riuscito ha più di 3 giorni.
+
+Lo stesso script registra per `git maintenance` (prefetch orario, gc) i repo
+in `~/source` con un commit negli ultimi 90 giorni.
+
+```bash
+macos/launchd/install.sh                                    # solo i job
+launchctl kickstart -k gui/$(id -u)/com.exsnake.dotfiles.claude-backup   # lancia subito
+launchctl print gui/$(id -u)/com.exsnake.dotfiles.claude-backup          # stato e ultimo exit
+tail ~/Library/Logs/dotfiles/claude-backup.log
+```
+
+Un nuovo job: lo script in `macos/launchd/jobs/<nome>.sh`, il template in
+`macos/launchd/plists/com.exsnake.dotfiles.<nome>.plist`, poi `./install.sh`.
+Un template tolto dalla repo fa scaricare e cancellare il job corrispondente.
 
 ## Dipendenze
 

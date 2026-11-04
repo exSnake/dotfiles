@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.exsnake.dotfiles.cache-prune</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>__DOTFILES__/macos/launchd/run-job.sh</string>
+    <string>cache-prune</string>
+  </array>
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Day</key><integer>1</integer>
+    <key>Hour</key><integer>11</integer>
+    <key>Minute</key><integer>0</integer>
+  </dict>
+
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>LowPriorityIO</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>__HOME__/Library/Logs/dotfiles/cache-prune.log</string>
+  <key>StandardErrorPath</key>
+  <string>__HOME__/Library/Logs/dotfiles/cache-prune.log</string>
+</dict>
+</plist>
