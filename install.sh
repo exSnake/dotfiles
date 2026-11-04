@@ -159,7 +159,14 @@ for p in zaw zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-s
 done
 
 # ==============================================================================
-#  5. Check finali
+#  5. Job di manutenzione (solo macOS): LaunchAgents + git maintenance
+# ==============================================================================
+if [ "$OS" = "macos" ]; then
+  "$DOTFILES/macos/launchd/install.sh"
+fi
+
+# ==============================================================================
+#  6. Check finali
 # ==============================================================================
 case "${SHELL:-}" in
   */zsh) ok "shell di default: zsh" ;;

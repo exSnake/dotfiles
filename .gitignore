@@ -1,5 +1,9 @@
 # backup creati da install.sh
 *.backup.*
 
+# elenco dei pacchetti, scritto ogni settimana da brew-upgrade (repo pubblica)
+Brewfile
+Brewfile.lock.json
+
 # roba di sistema
 .DS_Store
