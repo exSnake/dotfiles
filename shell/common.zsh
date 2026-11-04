@@ -21,6 +21,13 @@ function exists {
   type "$1" &> /dev/null
 }
 
+# is_human_shell  ->  false inside a Claude Code shell (CLAUDECODE=1).
+# Aliases that replace a standard command (ls, cat, cd, top) are defined only
+# when this is true: agents run commands with the standard flags.
+function is_human_shell {
+  [[ -z "$CLAUDECODE" ]]
+}
+
 # warn_missing <cmd> <hint>  ->  true if present; else print a warning, false
 # Uso:  warn_missing eza "$DOTFILES_INSTALL_HINT eza" && alias ls="eza ..."
 function warn_missing {
@@ -131,6 +138,16 @@ zstyle ':fzf-tab:complete:(cd|ls|eza):*' fzf-preview 'eza -1 --icons --color=alw
 # fzf (se installato via git/script, fuori dal plugin OMZ)
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
+# fzf lists files with fd: faster, and it skips .git and what .gitignore excludes
+if exists fd; then
+  export FZF_DEFAULT_COMMAND="fd --type f --hidden --exclude .git"
+  export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+  export FZF_ALT_C_COMMAND="fd --type d --hidden --exclude .git"
+fi
+
+# mise: Node, Python & co. per directory (reads .nvmrc and .tool-versions too)
+warn_missing mise "$DOTFILES_INSTALL_HINT mise" && eval "$(mise activate zsh)"
+
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
 
 # ----------------------------------------------------------------------------
@@ -144,8 +161,14 @@ bindkey '^[[B' history-substring-search-down
 bindkey '^[OA' history-substring-search-up    # varianti per terminali diversi
 bindkey '^[OB' history-substring-search-down
 
+# atuin owns ^R (history search); the arrows stay with history-substring-search
+if warn_missing atuin "$DOTFILES_INSTALL_HINT atuin"; then
+  eval "$(atuin init zsh --disable-up-arrow)"
+else
+  bindkey '^R' zaw-history
+fi
+
 # zaw
-bindkey '^R' zaw-history
 bindkey '^S' zaw-git-status
 bindkey '^T' zaw-git-files
 bindkey '^B' zaw-git-branches
@@ -156,7 +179,7 @@ bindkey '^[r' zaw-git-reflog          # ALT+R (Reflog) — was ^X, which clobber
 # ----------------------------------------------------------------------------
 #  Aliases — listing (eza)
 # ----------------------------------------------------------------------------
-if warn_missing eza "$DOTFILES_INSTALL_HINT eza"; then
+if is_human_shell && warn_missing eza "$DOTFILES_INSTALL_HINT eza"; then
   alias ls="eza --icons --group-directories-first"
   alias l="eza --icons --group-directories-first"
   alias ll="eza -lah --icons --group-directories-first --git"
@@ -192,6 +215,19 @@ alias c="clear"
 alias sudo="sudo "
 
 # ----------------------------------------------------------------------------
+#  Aliases — comandi standard serviti da strumenti migliori (solo shell umane)
+# ----------------------------------------------------------------------------
+# Same name, same everyday use. find and du are left alone: fd and dust take
+# different flags, so `fd` and `dust` / `ncdu` keep their own names.
+if is_human_shell; then
+  if warn_missing bat "$DOTFILES_INSTALL_HINT bat"; then
+    alias cat="bat --paging=never --style=plain"
+    export MANPAGER="sh -c 'col -bx | bat --language=man --plain'"
+  fi
+  exists btop && alias top="btop"
+fi
+
+# ----------------------------------------------------------------------------
 #  Aliases — dev
 # ----------------------------------------------------------------------------
 if exists gh; then
@@ -215,3 +251,11 @@ command_not_found_handler() {
   print -P "   prova:  %F{green}$DOTFILES_INSTALL_HINT $1%f"
   return 127
 }
+
+# ----------------------------------------------------------------------------
+#  zoxide — `cd` impara le cartelle più usate (`cd homelab` ci salta da ovunque,
+#  `cdi` apre la scelta con fzf). Va inizializzato per ultimo.
+# ----------------------------------------------------------------------------
+if is_human_shell && warn_missing zoxide "$DOTFILES_INSTALL_HINT zoxide"; then
+  eval "$(zoxide init zsh --cmd cd)"
+fi

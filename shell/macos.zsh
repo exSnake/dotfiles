@@ -22,14 +22,7 @@ plugins+=(macos)
 # iTerm2 shell integration (opzionale, nessun warning se assente)
 [ -e "${HOME}/.iterm2_shell_integration.zsh" ] && source "${HOME}/.iterm2_shell_integration.zsh"
 
-# nvm (via Homebrew)
-export NVM_DIR="$HOME/.nvm"
-if [ -s "/opt/homebrew/opt/nvm/nvm.sh" ]; then
-  \. "/opt/homebrew/opt/nvm/nvm.sh"
-  [ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
-else
-  print -P "%F{yellow}⚠  nvm non installato%f — $DOTFILES_INSTALL_HINT nvm"
-fi
+# Node, Python & co. come from mise, activated in common.zsh.
 
 # ----------------------------------------------------------------------------
 #  Aliases — macOS only

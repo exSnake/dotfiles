@@ -1,0 +1,22 @@
+# ~/.atuin/config.toml, linked from ~/source/dotfiles/atuin/config.toml
+# Full reference: https://docs.atuin.sh/configuration/config/
+
+# Fuzzy search over the whole history. Ctrl+R inside the search cycles
+# global, host, session and directory.
+search_mode = "fuzzy"
+filter_mode = "global"
+
+# Compact list right under the prompt.
+style = "compact"
+inline_height = 25
+
+# Enter puts the selected command on the prompt, ready to edit.
+enter_accept = false
+
+# Commands that start with a space are not saved, as with HIST_IGNORE_SPACE.
+history_filter = ["^ "]
+
+# Secrets (AWS keys, GitHub tokens, Slack webhooks...) are never saved.
+secrets_filter = true
+
+update_check = false
