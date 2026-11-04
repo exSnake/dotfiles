@@ -20,7 +20,8 @@ quando vuoi (es. dopo ogni `git pull`) e fa solo ciò che manca:
    su Linux, nvm con lo script ufficiale);
 3. **Oh My Zsh**, se assente (senza toccare il symlink `~/.zshrc`);
 4. **plugin OMZ custom** (zaw, autosuggestions, syntax-highlighting,
-   history-substring-search): clonati se mancano, `git pull` se presenti.
+   history-substring-search, fzf-tab, you-should-use): clonati se mancano,
+   `git pull` se presenti.
 
 Cosa NON fa (te lo segnala e basta): installare Homebrew su macOS, cambiare
 la shell di default (`chsh`), installare il Nerd Font lato Windows per WSL.
@@ -190,4 +191,12 @@ Plugin OMZ custom (tutti gli OS):
 for p in zaw zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search; do
   git clone "https://github.com/zsh-users/$p" "$HOME/.oh-my-zsh/custom/plugins/$p"
 done
+git clone https://github.com/Aloxaf/fzf-tab "$HOME/.oh-my-zsh/custom/plugins/fzf-tab"
+git clone https://github.com/MichaelAquilina/zsh-you-should-use "$HOME/.oh-my-zsh/custom/plugins/you-should-use"
 ```
+
+- **fzf-tab**: il Tab apre un menu fzf con ricerca fuzzy; su `cd`, `ls` ed
+  `eza` mostra in anteprima il contenuto della cartella. `**` seguito da Tab
+  resta il completamento di fzf.
+- **you-should-use**: quando scrivi per intero un comando che ha un alias
+  (es. `git status` invece di `gst`), stampa l'alias.

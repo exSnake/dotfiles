@@ -43,9 +43,12 @@ DEFAULT_USER="$USER"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Add wisely, as too many plugins slow down shell startup.
 # I file OS possono aggiungerne altri con:  plugins+=(nome)
+# fzf-tab must stay before zsh-autosuggestions and zsh-syntax-highlighting.
 plugins=(
   git
+  you-should-use
   zaw
+  fzf-tab
   zsh-autosuggestions
   zsh-syntax-highlighting
   zsh-history-substring-search
@@ -106,11 +109,21 @@ setopt HIST_VERIFY
 #  Tool integrations
 # ----------------------------------------------------------------------------
 # Plugin custom: OMZ li ignora in silenzio se mancano — qui invece avvisiamo
-for _plugin in zaw zsh-autosuggestions zsh-syntax-highlighting zsh-history-substring-search; do
+for _plugin _url in \
+  zaw                          https://github.com/zsh-users/zaw \
+  zsh-autosuggestions          https://github.com/zsh-users/zsh-autosuggestions \
+  zsh-syntax-highlighting      https://github.com/zsh-users/zsh-syntax-highlighting \
+  zsh-history-substring-search https://github.com/zsh-users/zsh-history-substring-search \
+  fzf-tab                      https://github.com/Aloxaf/fzf-tab \
+  you-should-use               https://github.com/MichaelAquilina/zsh-you-should-use; do
   [ -d "$ZSH/custom/plugins/$_plugin" ] || \
-    print -P "%F{yellow}⚠  plugin '$_plugin' non trovato%f — git clone https://github.com/zsh-users/$_plugin \"\$ZSH/custom/plugins/$_plugin\""
+    print -P "%F{yellow}⚠  plugin '$_plugin' non trovato%f — git clone $_url \"\$ZSH/custom/plugins/$_plugin\""
 done
-unset _plugin
+unset _plugin _url
+
+# fzf-tab: its own menu replaces the zsh one; cd and ls completions preview the directory
+zstyle ':completion:*' menu no
+zstyle ':fzf-tab:complete:(cd|ls|eza):*' fzf-preview 'eza -1 --icons --color=always $realpath 2>/dev/null || ls -1 $realpath'
 
 # zaw non ha un .plugin.zsh standard: va sourcato a mano
 [ -s "$ZSH/custom/plugins/zaw/zaw.zsh" ] && source "$ZSH/custom/plugins/zaw/zaw.zsh"
