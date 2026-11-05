@@ -172,10 +172,10 @@ generati dai template in `macos/launchd/plists/`. Ogni job passa da
 
 | Job | Quando | Cosa fa |
 |---|---|---|
-| `brew-upgrade` | lunedì 10:00 | `brew update`, `upgrade --formula`, `cleanup --prune=30`, riscrive `Brewfile` (in `.gitignore`) |
-| `docker-prune` | lunedì 10:30 | immagini inutilizzate da 30 giorni e build cache oltre 10 GB (i volumi restano) |
+| `brew-upgrade` | ogni giorno, 4:00 | `brew update`, `upgrade --formula`, `cleanup --prune=30`, riscrive `Brewfile` (in `.gitignore`) |
+| `docker-prune` | ogni giorno, 3:30 | immagini inutilizzate da 30 giorni e build cache oltre 10 GB (i volumi restano) |
 | `cache-prune` | il 1° del mese, 11:00 | `npm cache clean`, `uv cache prune` |
-| `claude-backup` | ogni giorno, 13:00 | `rsync` di `~/.claude` sul NAS, senza cancellare nulla dall'altra parte |
+| `claude-backup` | ogni giorno, 3:00 e 13:00 | `rsync` di `~/.claude` sul NAS, senza cancellare nulla dall'altra parte |
 
 Se all'ora prevista il Mac dorme, il job parte al risveglio.
 `claude-backup` con il NAS irraggiungibile salta il giro e fallisce solo se

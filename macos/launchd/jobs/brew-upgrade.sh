@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Weekly: updates Homebrew formulae, prunes old downloads and dumps the
+# Daily: updates Homebrew formulae, prunes old downloads and dumps the
 # Brewfile into the repo so a new Mac can be rebuilt with `brew bundle`.
 # Casks are left alone: most update themselves and some ask for sudo.
 set -euo pipefail
