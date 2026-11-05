@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Weekly: removes images unused for 30 days and trims the build cache.
+# Daily: removes images unused for 30 days and trims the build cache.
 # Volumes are never touched: they hold the local databases of stopped projects.
 set -euo pipefail
 
