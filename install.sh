@@ -71,6 +71,7 @@ link zshrc             "$HOME/.zshrc"
 link tmux/tmux.conf    "$HOME/.tmux.conf"
 link mise/global.toml  "$HOME/.config/mise/config.toml"
 link atuin/config.toml "$HOME/.atuin/config.toml"
+link claude/tab-title.py "$HOME/.claude/scripts/tab-title.py"
 # link vimrc     "$HOME/.vimrc"
 
 # ~/.gitconfig resta personale (email, alias, maintenance.repo): la repo è
@@ -194,6 +195,7 @@ done
 # ==============================================================================
 if [ "$OS" = "macos" ]; then
   "$DOTFILES/macos/launchd/install.sh"
+  python3 "$DOTFILES/claude/register-hooks.py"
 fi
 
 # ==============================================================================
