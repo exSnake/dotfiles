@@ -114,7 +114,33 @@ Nelle shell di Claude Code (`CLAUDECODE=1`) questi alias non vengono definiti:
 un agente scrive i comandi con le opzioni standard, e `ls -t` su eza vuol dire
 un'altra cosa. La funzione `is_human_shell` in `common.zsh` fa il controllo.
 
-### Dipendenze mancanti → hint automatico
+### Titoli delle tab di iTerm2 per Claude Code (macOS)
+
+`claude/tab-title.py` è un hook di Claude Code: a ogni fine turno (`Stop`) e
+all'avvio di una sessione (`SessionStart`) dà alla tab di iTerm2 il nome della
+PR su cui la sessione ha lavorato.
+
+| Caso | Titolo |
+|---|---|
+| PR aperta | `sossoldi: #726 show admins the operators of each client` |
+| PR mergiata o chiusa | `betech: PR accounting BE e FE · frontend#348 merged` |
+| PR di un altro repo | `homelab-infra: dotfiles#6 name iTerm2 tabs after the…` |
+| nessuna PR | `homelab-infra: RustDesk 1.5.3` |
+
+Il progetto è la prima cartella sotto `~/source`. Prima del numero della PR
+compare il repo quando è diverso dal progetto: il nome della cartella del suo
+clone sotto `~/source` (cercato fino a due livelli, mappa in cache per un'ora),
+o il nome su GitHub se il clone non c'è. La PR è l'ultima che compare
+nei record `pr-link` del transcript; l'argomento è il titolo che Claude Code
+genera per la sessione. Lo stato delle PR aperte si richiede a GitHub al
+massimo ogni 5 minuti, quello delle PR chiuse resta in cache
+(`~/.cache/cc-tab-title/`). Il nome si imposta con `it2`, la CLI di iTerm2.
+
+`install.sh` crea il symlink e registra i due hook in
+`~/.claude/settings.json` con `claude/register-hooks.py`, che aggiunge solo
+quelli mancanti. Per escludere una sessione: `CC_TAB_TITLE=off`.
+
+## Dipendenze mancanti → hint automatico
 
 Ogni file OS dichiara come si installano i pacchetti (`DOTFILES_INSTALL_HINT`:
 `brew install` su macOS, `sudo apt install` / `sudo pacman -S` su Linux):
@@ -161,6 +187,7 @@ Ogni file OS dichiara come si installano i pacchetti (`DOTFILES_INSTALL_HINT`:
 | `atuin/config.toml`| `~/.atuin/config.toml` | ricerca fuzzy, lista compatta, Invio che non esegue subito |
 | `git/delta.gitconfig` | incluso da `~/.gitconfig` | delta come pager di git |
 | `macos/launchd/`   | —          | Job launchd di manutenzione (vedi sotto)    |
+| `claude/tab-title.py` | `~/.claude/scripts/tab-title.py` | hook di Claude Code che dà il nome alle tab di iTerm2 (vedi sotto) |
 | `Brewfile`         | —          | Pacchetti Homebrew, scritto da `brew-upgrade`, solo locale |
 
 ## Job di manutenzione (macOS)
