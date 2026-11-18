@@ -123,10 +123,14 @@ PR su cui la sessione ha lavorato.
 | Caso | Titolo |
 |---|---|
 | PR aperta | `sossoldi: #726 show admins the operators of each client` |
-| PR mergiata o chiusa | `betech: PR accounting BE e FE · #348 merged` |
+| PR mergiata o chiusa | `betech: PR accounting BE e FE · frontend#348 merged` |
+| PR di un altro repo | `homelab-infra: dotfiles#6 name iTerm2 tabs after the…` |
 | nessuna PR | `homelab-infra: RustDesk 1.5.3` |
 
-Il progetto è la prima cartella sotto `~/source`. La PR è l'ultima che compare
+Il progetto è la prima cartella sotto `~/source`. Prima del numero della PR
+compare il repo quando è diverso dal progetto: il nome della cartella del suo
+clone sotto `~/source` (cercato fino a due livelli, mappa in cache per un'ora),
+o il nome su GitHub se il clone non c'è. La PR è l'ultima che compare
 nei record `pr-link` del transcript; l'argomento è il titolo che Claude Code
 genera per la sessione. Lo stato delle PR aperte si richiede a GitHub al
 massimo ogni 5 minuti, quello delle PR chiuse resta in cache

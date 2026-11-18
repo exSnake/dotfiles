@@ -4,11 +4,14 @@
 Wire it to Stop and SessionStart. It reads the hook payload on stdin, detaches,
 and sets the session name with iTerm2's `it2`:
 
-    <project>: #<pr> <pr title> (<state>)     the last PR the session touched
-    <project>: <topic> · #<pr> merged          that PR is merged or closed
+    <project>: <repo>#<pr> <pr title>          the last PR the session touched
+    <project>: <topic> · <repo>#<pr> merged    that PR is merged or closed
     <project>: <topic>                         no PR yet
 
 <project> is the first directory under ~/source (sossoldi, betech, ...).
+<repo> is the folder of the PR's local clone under ~/source (frontend,
+dotfiles, ...), or the GitHub repo name without a clone; it is left out when
+it matches <project>.
 <topic> is the title Claude Code generates for the session.
 The PR comes from the `pr-link` records Claude Code writes in the transcript.
 
@@ -31,6 +34,8 @@ SOURCE = Path.home() / "source"
 OPEN_PR_TTL = 300
 TAIL_BYTES = 4 * 1024 * 1024
 MAX_TOPIC = 45
+CLONES_TTL = 3600
+REMOTE = re.compile(r"github\.com[:/]([^/]+/[^/]+?)(?:\.git)?/?$")
 
 
 def project_label(cwd: str) -> str:
@@ -39,6 +44,35 @@ def project_label(cwd: str) -> str:
         return path.relative_to(SOURCE).parts[0]
     except (ValueError, IndexError):
         return path.name or "~"
+
+
+def scan_clones() -> dict[str, str]:
+    """Map "owner/repo" (lowercase) to the folder of its main clone under ~/source."""
+    clones: dict[str, str] = {}
+    for git_dir in sorted(SOURCE.glob("*/.git")) + sorted(SOURCE.glob("*/*/.git")):
+        if not git_dir.is_dir():
+            continue
+        result = subprocess.run(
+            ["git", "-C", str(git_dir.parent), "config", "--get", "remote.origin.url"],
+            capture_output=True, text=True, timeout=5,
+        )
+        match = REMOTE.search(result.stdout.strip())
+        if match:
+            clones.setdefault(match.group(1).lower(), git_dir.parent.name)
+    return clones
+
+
+def repo_alias(repo: str, label: str) -> str:
+    CACHE.mkdir(parents=True, exist_ok=True)
+    cached = CACHE / "clones.json"
+    clones = json.loads(cached.read_text()) if cached.exists() else {}
+    if repo.lower() not in clones and (
+        not cached.exists() or time.time() - cached.stat().st_mtime > CLONES_TTL
+    ):
+        clones = scan_clones()
+        cached.write_text(json.dumps(clones))
+    alias = clones.get(repo.lower(), repo.split("/")[-1])
+    return "" if alias.lower() == label.lower() else alias
 
 
 def read_tail(path: Path) -> list[dict]:
@@ -96,13 +130,14 @@ def build_title(payload: dict) -> str | None:
     pr, topic = last_pr_and_topic(transcript)
     if pr:
         info = pr_info(pr["prRepository"], pr["prNumber"])
+        ref = f"{repo_alias(pr['prRepository'], label)}#{pr['prNumber']}"
         if info and info["state"] == "OPEN":
-            return f"{label}: #{pr['prNumber']} {shorten(info['title'])}"
+            return f"{label}: {ref} {shorten(info['title'])}"
         if info:
             state = info["state"].lower()
             if topic:
-                return f"{label}: {shorten(topic)} · #{pr['prNumber']} {state}"
-            return f"{label}: #{pr['prNumber']} {shorten(info['title'])} ({state})"
+                return f"{label}: {shorten(topic)} · {ref} {state}"
+            return f"{label}: {ref} {shorten(info['title'])} ({state})"
     return f"{label}: {shorten(topic)}" if topic else None
 
 
